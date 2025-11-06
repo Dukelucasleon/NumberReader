@@ -1,17 +1,35 @@
-document.getElementById('imageInput').addEventListener('change', async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+const imageInput = document.getElementById('imageInput');
+const pasteZone = document.getElementById('pasteZone');
+const output = document.getElementById('output');
 
-  const output = document.getElementById('output');
+imageInput.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    await processImage(file);
+  }
+});
+
+pasteZone.addEventListener('paste', async (event) => {
+  const items = event.clipboardData.items;
+  for (let item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      const blob = item.getAsFile();
+      await processImage(blob);
+      break;
+    }
+  }
+});
+
+async function processImage(imageBlob) {
   output.textContent = 'Processing...';
 
-  const { data: { text } } = await Tesseract.recognize(file, 'eng', {
+  const { data: { text } } = await Tesseract.recognize(imageBlob, 'eng', {
     logger: m => console.log(m)
   });
 
   const cleaned = extractFormattedNumbers(text);
-  output.textContent = cleaned;
-});
+  output.textContent = cleaned.join('\n');
+}
 
 function extractFormattedNumbers(rawText) {
   const matches = rawText.match(/\d+(\.\d{1,2})?/g) || [];
@@ -24,7 +42,7 @@ function extractFormattedNumbers(rawText) {
     } else {
       return formatThousands(num);
     }
-  }).join(', ');
+  });
 }
 
 function formatThousands(numStr) {
