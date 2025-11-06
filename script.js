@@ -28,7 +28,7 @@ async function processImage(imageBlob) {
   });
 
   const cleaned = extractFormattedNumbers(text);
-  output.textContent = cleaned.join('\n');
+  output.textContent = cleaned.filter(Boolean).join('\n');
 }
 
 function extractFormattedNumbers(rawText) {
