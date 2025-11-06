@@ -10,9 +10,12 @@
   <h1>Upload or Paste Image for OCR</h1>
 
   <div class="upload-area">
-    <input type="file" id="imageInput" accept="image/*" />
-    <p>Or paste your screenshot directly into this box:</p>
-    <div id="pasteZone" contenteditable="true" class="paste-zone">Paste image here</div>
+    <label for="imageInput" class="upload-button">Choose Image</label>
+    <input type="file" id="imageInput" accept="image/*" hidden />
+
+    <div id="pasteZone" class="paste-zone" tabindex="0">
+      <p><strong>Paste your screenshot here (Ctrl+V)</strong></p>
+    </div>
   </div>
 
   <div id="outputContainer">
