@@ -7,9 +7,18 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Upload Image for OCR</h1>
-  <input type="file" id="imageInput" accept="image/*" />
-  <div id="output"></div>
+  <h1>Upload or Paste Image for OCR</h1>
+
+  <div class="upload-area">
+    <input type="file" id="imageInput" accept="image/*" />
+    <p>Or paste your screenshot directly into this box:</p>
+    <div id="pasteZone" contenteditable="true" class="paste-zone">Paste image here</div>
+  </div>
+
+  <div id="outputContainer">
+    <h2>Extracted Numbers</h2>
+    <pre id="output"></pre>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script src="script.js"></script>
