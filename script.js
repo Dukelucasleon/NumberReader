@@ -33,12 +33,9 @@ function preprocessImage(img) {
   canvas.width = img.width;
   canvas.height = img.height;
 
-  // Draw grayscale image
+  // Draw grayscale image with enhanced contrast
   ctx.filter = 'grayscale(100%) brightness(150%) contrast(185%)';
   ctx.drawImage(img, 0, 0);
-
-  // Simulate edge enhancement (basic sharpening)
-  // This is limited in browser — advanced filters require WebGL or WASM
 }
 
 async function canvasToBlob(canvas) {
@@ -53,24 +50,25 @@ async function runOCR(imageBlob) {
     tessedit_char_whitelist: '0123456789.,'
   });
 
-  const cleaned = extractFormattedNumbers(text);
+  // Replace commas with placeholder to preserve them through line splitting
+  const safeText = text.replace(/,/g, '%%');
+
+  const cleaned = extractFormattedNumbers(safeText);
   output.textContent = cleaned.filter(Boolean).join('\n');
 }
 
 function extractFormattedNumbers(rawText) {
-  const matches = rawText.match(/\d+(\.\d{1,2})?/g) || [];
+  const matches = rawText.match(/\d+(%%\d{3})*(\.\d{1,2})?/g) || [];
 
   return matches.map(num => {
-    if (num.includes('.')) {
-      const [whole, decimal] = num.split('.');
-      const formattedWhole = formatThousands(whole);
-      return `${formattedWhole}.${decimal}`;
-    } else {
-      return formatThousands(num);
-    }
+    // Restore commas from placeholder
+    const restored = num.replace(/%%/g, ',');
+    return formatThousands(restored);
   });
 }
 
 function formatThousands(numStr) {
+  // Skip reformatting if already contains commas
+  if (numStr.includes(',')) return numStr;
   return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
