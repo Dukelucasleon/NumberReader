@@ -28,7 +28,7 @@ async function handleImage(blob) {
   canvas.height = img.height;
 
   // Apply brightness and contrast
-  ctx.filter = 'brightness(115%) contrast(123%)';
+  ctx.filter = 'brightness(110%) contrast(128%)';
   ctx.drawImage(img, 0, 0);
 
   const processedBlob = await new Promise(resolve =>
