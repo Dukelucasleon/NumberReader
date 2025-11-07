@@ -51,9 +51,9 @@ async function runOCR(imageBlob) {
       }
     });
 
-    // Extract only numeric-looking values, split by whitespace or commas
+    // Extract only numeric-looking values, split by whitespace only
     const raw = data.text;
-    const tokens = raw.split(/[\s,]+/);
+    const tokens = raw.split(/\s+/);
     const numbersOnly = tokens
       .map(t => t.replace(/[^\d.-]/g, '')) // remove non-numeric characters including commas
       .filter(t => /^-?\d*\.?\d+$/.test(t)); // keep valid numbers
