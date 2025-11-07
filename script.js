@@ -80,8 +80,22 @@ async function runOCR(imageBlob) {
     logger: m => console.log(m),
     config: {
       preserve_interword_spaces: '1',
-      tessedit_char_whitelist: '0123456789.,'
+      tessedit_char_whitelist: '0123456789.,',
+      psm: '6'
     }
+  });
+
+  const safeText = data.text.replace(/,/g, '%%');
+  const lines = safeText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const merged = mergeSplitNumbers(lines);
+
+  const formatted = merged.map(num => {
+    const restored = num.replace(/%%/g, ',');
+    return formatThousands(restored);
+  });
+
+  output.textContent = formatted.join('\n');
+}
   });
 
   const safeText = data.text.replace(/,/g, '%%');
