@@ -55,7 +55,7 @@ async function runOCR(imageBlob) {
     const raw = data.text;
     const tokens = raw.split(/[\s,]+/);
     const numbersOnly = tokens
-      .map(t => t.replace(/[^\d.-]/g, '')) // remove non-numeric characters
+      .map(t => t.replace(/[^\d.-]/g, '')) // remove non-numeric characters including commas
       .filter(t => /^-?\d*\.?\d+$/.test(t)); // keep valid numbers
 
     output.textContent = numbersOnly.join('\n');
