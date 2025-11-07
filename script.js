@@ -45,14 +45,20 @@ async function runOCR(imageBlob) {
     const { data } = await Tesseract.recognize(imageBlob, 'eng', {
       logger: m => console.log(m),
       config: {
-        tessedit_char_whitelist: '0123456789.,-',
+        tessedit_char_whitelist: '0123456789.-',
         preserve_interword_spaces: '1',
         psm: '6'
       }
     });
 
-    const numericOnly = data.text.replace(/[^\d.,-]/g, '');
-    output.textContent = numericOnly;
+    // Extract only numeric-looking values, split by whitespace or commas
+    const raw = data.text;
+    const tokens = raw.split(/[\s,]+/);
+    const numbersOnly = tokens
+      .map(t => t.replace(/[^\d.-]/g, '')) // remove non-numeric characters
+      .filter(t => /^-?\d*\.?\d+$/.test(t)); // keep valid numbers
+
+    output.textContent = numbersOnly.join('\n');
   } catch (error) {
     console.error('OCR error:', error);
     output.textContent = 'Failed to read text from image.';
