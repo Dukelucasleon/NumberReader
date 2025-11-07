@@ -33,9 +33,40 @@ function preprocessImage(img) {
   canvas.width = img.width;
   canvas.height = img.height;
 
-  // Invert + grayscale + enhance contrast for better OCR on dark backgrounds
+  // Step 1: Draw grayscale + contrast + invert for dark backgrounds
   ctx.filter = 'invert(100%) grayscale(100%) brightness(150%) contrast(185%)';
   ctx.drawImage(img, 0, 0);
+
+  // Step 2: Apply basic edge detection
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+
+  const outputData = ctx.createImageData(width, height);
+  const out = outputData.data;
+
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const i = (y * width + x) * 4;
+
+      const gx =
+        -data[i - 4 - width * 4] - 2 * data[i - 4] - data[i - 4 + width * 4] +
+        data[i + 4 - width * 4] + 2 * data[i + 4] + data[i + 4 + width * 4];
+
+      const gy =
+        -data[i - 4 - width * 4] - 2 * data[i - width * 4] - data[i + 4 - width * 4] +
+        data[i - 4 + width * 4] + 2 * data[i + width * 4] + data[i + 4 + width * 4];
+
+      const magnitude = Math.sqrt(gx * gx + gy * gy);
+      const edge = magnitude > 128 ? 0 : 255;
+
+      out[i] = out[i + 1] = out[i + 2] = edge;
+      out[i + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(outputData, 0, 0);
 }
 
 async function canvasToBlob(canvas) {
@@ -53,16 +84,10 @@ async function runOCR(imageBlob) {
     }
   });
 
-  // Replace commas with placeholder to preserve them through line splitting
   const safeText = data.text.replace(/,/g, '%%');
-
-  // Split into lines and clean
   const lines = safeText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-
-  // Merge split numbers like "1" + "024" into "1,024"
   const merged = mergeSplitNumbers(lines);
 
-  // Restore commas and format
   const formatted = merged.map(num => {
     const restored = num.replace(/%%/g, ',');
     return formatThousands(restored);
@@ -78,7 +103,7 @@ function mergeSplitNumbers(lines) {
     const next = lines[i + 1];
     if (/^\d+$/.test(current) && /^\d{3}$/.test(next)) {
       merged.push(`${current},${next}`);
-      i++; // skip next
+      i++;
     } else {
       merged.push(current);
     }
@@ -87,7 +112,6 @@ function mergeSplitNumbers(lines) {
 }
 
 function formatThousands(numStr) {
-  // Skip reformatting if already contains commas or decimals
   if (numStr.includes(',') || numStr.includes('.')) return numStr;
   return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
